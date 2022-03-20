@@ -13,3 +13,7 @@ if not APIKEY:
 
 DEBUG = os.getenv("DEBUG", "true")
 DEBUG = DEBUG.lower() == "true"
+
+CHANNEL = os.getenv("CHANNEL")
+if not CHANNEL:
+    raise Exception("CHANNEL is empty")

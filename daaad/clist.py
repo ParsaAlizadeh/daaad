@@ -114,7 +114,7 @@ def fetch_contests(now: datetime):
         return []
 
 def fetch_desired_contests(now: datetime):
-    return list(filter(
+    return filter(
         Contest.is_desired,
         fetch_contests(now)
-    ))
+    )
