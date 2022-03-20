@@ -21,7 +21,7 @@ _ALLOWED_PATTERNS["stats.ioinformatics.org"] = [""]
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
 
-_DAYS = 2
+_DAYS = 5
 
 
 def relative_date(d1: datetime, d2: datetime):
@@ -124,3 +124,7 @@ def fetch_desired_contests(now: datetime):
         Contest.is_desired,
         fetch_contests(now)
     )
+
+def fetch_upcoming():
+    now = datetime.utcnow().astimezone(utc)
+    return list(fetch_desired_contests(now))

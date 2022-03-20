@@ -12,11 +12,12 @@ from telegram.ext import (
 from .constants import *
 from .clist import (
     Contest,
-    fetch_desired_contests,
+    fetch_upcoming,
     utc, tehran
 )
 
-def send_contest(now: datetime, contest: Contest, context: CallbackContext):
+def announce_one(contest: Contest, context: CallbackContext):
+    now = datetime.utcnow().astimezone(utc)
     context.bot.send_message(
         chat_id=CHANNEL,
         text=contest.pretty_show(now),
@@ -39,8 +40,7 @@ def manual_command(update: Update, context: CallbackContext):
     json = { key: event[i] for i, key in enumerate(['event', 'href', 'start', 'end'])}
     json['resource'] = ''
     contest = Contest(json)
-    now = datetime.utcnow().astimezone(utc)
-    send_contest(now, contest, context)
+    announce_one(contest, context)
 
     update.message.reply_text("انجام شد")
     logging.info("manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
@@ -49,12 +49,14 @@ def manual_command(update: Update, context: CallbackContext):
 def log_error(update: Update, context: CallbackContext):
     logging.error('error handler called. [update="%s", error="%s"]', update, context.error)
 
-def announce_contests(context: CallbackContext):
+def daily_announce(context: CallbackContext):
+    upcoming = fetch_upcoming()
+    if not upcoming:
+        logging.info("no contest found today")
+        return
     context.bot.send_message(CHANNEL, 'سلام ملت!', disable_notification=True)
-    now = datetime.utcnow().astimezone(utc)
-    contests = fetch_desired_contests(now)
-    for c in contests:
-        send_contest(now, c, context)
+    for contest in upcoming:
+        announce_one(contest, context)
 
 def main():
     logging.basicConfig(
@@ -70,7 +72,7 @@ def main():
     dispatcher.add_error_handler(log_error)
 
     updater.job_queue.run_daily(
-        callback=announce_contests,
+        callback=daily_announce,
         time=time(11, 0).replace(tzinfo=tehran),
         name="daily"
     )
@@ -78,7 +80,7 @@ def main():
     if DEBUG:
         logging.info("start polling")
         updater.job_queue.run_once(
-            callback=announce_contests,
+            callback=daily_announce,
             when=10,
             name="once (debug)"
         )
