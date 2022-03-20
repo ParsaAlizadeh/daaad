@@ -21,6 +21,8 @@ _ALLOWED_PATTERNS["stats.ioinformatics.org"] = [""]
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
 
+_DAYS = 2
+
 
 def relative_date(d1: datetime, d2: datetime):
     a_day = timedelta(days=1)
@@ -98,7 +100,7 @@ def fetch_contests(now: datetime):
     params = {
         "limit": 200,
         "start__gte": now.isoformat(timespec='seconds'),
-        "start__lte": (now + timedelta(days=2)).isoformat(timespec='seconds'),
+        "start__lte": (now + timedelta(days=_DAYS)).isoformat(timespec='seconds'),
         "order_by": "start",
         "duration__lte": timedelta(hours=5).seconds
     }
