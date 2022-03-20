@@ -14,6 +14,8 @@ tehran = pytz.timezone('Asia/Tehran')
 _ALLOWED_PATTERNS = defaultdict(list)
 _ALLOWED_PATTERNS["codeforces.com"] = [""]
 _ALLOWED_PATTERNS["atcoder.jp"] = ["beginner", "regular", "grand"]
+_ALLOWED_PATTERNS["hsin.hr/coci"] = [""]
+_ALLOWED_PATTERNS["codingcompetitions.withgoogle.com"] = [""]
 
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
@@ -38,7 +40,7 @@ class Contest:
         self.start = datetime.fromisoformat(json["start"]).replace(tzinfo=utc)
         self.end = datetime.fromisoformat(json["end"]).replace(tzinfo=utc)
         self.event = json["event"]
-        self.host = json["host"]
+        self.resource = json["resource"]
         self.href = json["href"]
 
     def __str__(self):
@@ -48,10 +50,10 @@ class Contest:
         return self.__str__()
 
     def is_desired(self) -> bool:
-        for pat in _DISALLOWED_PATTERNS[self.host]:
+        for pat in _DISALLOWED_PATTERNS[self.resource]:
             if pat in self.event.lower():
                 return False
-        for pat in _ALLOWED_PATTERNS[self.host]:
+        for pat in _ALLOWED_PATTERNS[self.resource]:
             if pat in self.event.lower():
                 return True
         return False
@@ -81,7 +83,7 @@ class Contest:
         lines = [
             f'{relative}  /  {jalali}  /  {georgian}',
             f'از ساعت {start_t}',
-            f'تا ساعت {finish_t} ({delta_t})',
+            f'به مدت {delta_t}',
             self.event,
             self.href
         ]

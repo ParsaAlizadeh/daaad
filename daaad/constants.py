@@ -17,3 +17,9 @@ DEBUG = DEBUG.lower() == "true"
 CHANNEL = os.getenv("CHANNEL")
 if not CHANNEL:
     raise Exception("CHANNEL is empty")
+
+ADMINS = os.getenv("ADMINS", None)
+if ADMINS is not None:
+    ADMINS = set(map(int, ADMINS.split(':')))
+else:
+    ADMINS = set()

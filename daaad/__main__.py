@@ -27,13 +27,14 @@ def start_command(update: Update, context: CallbackContext):
     update.message.reply_text('\n'.join(msg))
 
 def manual_command(update: Update, context: CallbackContext):
+    if update.message.chat_id not in ADMINS:
+        return
     event = update.message.text.split('\n')[1:]
     json = { key: event[i] for i, key in enumerate(['event', 'href', 'start', 'end'])}
-    json['host'] = ''
+    json['resource'] = ''
     contest = Contest(json)
     now = datetime.utcnow().astimezone(utc)
     send_contest(now, contest, context)
-
     update.message.reply_text("انجام شد")
 
 def log_error(update: Update, context: CallbackContext):
