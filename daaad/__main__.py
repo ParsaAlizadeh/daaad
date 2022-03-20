@@ -10,7 +10,11 @@ from telegram.ext import (
 )
 
 from .constants import *
-from .clist import fetch_desired_contests, utc, Contest
+from .clist import (
+    Contest,
+    fetch_desired_contests,
+    utc, tehran
+)
 
 def send_contest(now: datetime, contest: Contest, context: CallbackContext):
     context.bot.send_message(
@@ -60,14 +64,18 @@ def main():
     dispatcher.add_handler(CommandHandler("manual", manual_command))
     dispatcher.add_error_handler(log_error)
 
-    updater.job_queue.run_once(
+    updater.job_queue.run_daily(
         callback=announce_contests,
-        when=5,
-        name="announce contest"
+        time=time(11, 0).replace(tzinfo=tehran)
     )
 
     if DEBUG:
         logging.info("Start polling")
+        updater.job_queue.run_once(
+            callback=announce_contests,
+            when=10,
+            name="announce contest"
+        )
         updater.start_polling()
 
     updater.idle()
