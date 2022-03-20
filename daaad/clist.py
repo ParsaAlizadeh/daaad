@@ -35,13 +35,11 @@ def relative_date(d1: datetime, d2: datetime):
 
 class Contest:
     def __init__(self, json):
-        self.duration = json["duration"]
         self.start = datetime.fromisoformat(json["start"]).replace(tzinfo=utc)
         self.end = datetime.fromisoformat(json["end"]).replace(tzinfo=utc)
         self.event = json["event"]
         self.host = json["host"]
         self.href = json["href"]
-        self.resource_id = json["resource_id"]
 
     def __str__(self):
         return f'<Contest "{self.event}" {self.start} {self.duration}>'

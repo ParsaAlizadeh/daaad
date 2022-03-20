@@ -10,7 +10,14 @@ from telegram.ext import (
 )
 
 from .constants import *
-from .clist import fetch_desired_contests, utc, tehran
+from .clist import fetch_desired_contests, utc, Contest
+
+def send_contest(now: datetime, contest: Contest, context: CallbackContext):
+    context.bot.send_message(
+        chat_id=CHANNEL,
+        text=contest.pretty_show(now),
+        disable_web_page_preview=True
+    )
 
 def start_command(update: Update, context: CallbackContext):
     msg = [
@@ -19,16 +26,25 @@ def start_command(update: Update, context: CallbackContext):
     ]
     update.message.reply_text('\n'.join(msg))
 
+def manual_command(update: Update, context: CallbackContext):
+    event = update.message.text.split('\n')[1:]
+    json = { key: event[i] for i, key in enumerate(['event', 'href', 'start', 'end'])}
+    json['host'] = ''
+    contest = Contest(json)
+    now = datetime.utcnow().astimezone(utc)
+    send_contest(now, contest, context)
+
+    update.message.reply_text("انجام شد")
+
 def log_error(update: Update, context: CallbackContext):
     logging.error('Error Handler Called. [update="%s", error="%s"]', update, context.error)
 
 def announce_contests(context: CallbackContext):
-    send_message = functools.partial(context.bot.send_message, CHANNEL)
-    send_message('سلام ملت!')
+    context.bot.send_message(CHANNEL, 'سلام ملت!', disable_notification=True)
     now = datetime.utcnow().astimezone(utc)
-    events = fetch_desired_contests(now)
-    for ev in events:
-        send_message(ev.pretty_show(now))
+    contests = fetch_desired_contests(now)
+    for c in contests:
+        send_contest(now, c, context)
 
 def main():
     logging.basicConfig(
@@ -40,11 +56,12 @@ def main():
 
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start_command))
+    dispatcher.add_handler(CommandHandler("manual", manual_command))
     dispatcher.add_error_handler(log_error)
 
     updater.job_queue.run_once(
         callback=announce_contests,
-        when=10,
+        when=5,
         name="announce contest"
     )
 
