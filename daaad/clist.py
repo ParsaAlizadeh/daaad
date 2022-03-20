@@ -21,7 +21,7 @@ _ALLOWED_PATTERNS["stats.ioinformatics.org"] = [""]
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
 
-_DAYS = 5
+_DAYS = 2
 
 
 def relative_date(d1: datetime, d2: datetime):

@@ -1,7 +1,7 @@
 import functools
 import logging
 
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from telegram import Update
 from telegram.ext import (
     Updater,
@@ -18,9 +18,37 @@ from .clist import (
 
 def announce_one(contest: Contest, context: CallbackContext):
     now = datetime.utcnow().astimezone(utc)
-    context.bot.send_message(
+    msg = context.bot.send_message(
         chat_id=CHANNEL,
         text=contest.pretty_show(now),
+        disable_web_page_preview=True
+    )
+    alarm_time = contest.start - timedelta(hours=1)
+    jobs = set(j.name for j in context.job_queue.jobs())
+    if contest.event not in jobs and alarm_time > now:
+        context.job_queue.run_once(
+            callback=announce_alarm,
+            when=alarm_time,
+            name=contest.event,
+            context={
+                "message_id": msg.message_id,
+                "contest": contest
+            }
+        )
+
+def announce_alarm(context: CallbackContext):
+    job = context.job
+    message_id = job.context["message_id"]
+    contest = job.context["contest"]
+    text = [
+        'یک ساعت مونده',
+        contest.event,
+        contest.href
+    ]
+    context.bot.send_message(
+        chat_id=CHANNEL,
+        text='\n'.join(text),
+        reply_to_message_id=message_id,
         disable_web_page_preview=True
     )
 
@@ -49,7 +77,7 @@ def manual_command(update: Update, context: CallbackContext):
 def log_error(update: Update, context: CallbackContext):
     logging.error('error handler called. [update="%s", error="%s"]', update, context.error)
 
-def daily_announce(context: CallbackContext):
+def announce_daily(context: CallbackContext):
     upcoming = fetch_upcoming()
     if not upcoming:
         logging.info("no contest found today")
@@ -72,7 +100,7 @@ def main():
     dispatcher.add_error_handler(log_error)
 
     updater.job_queue.run_daily(
-        callback=daily_announce,
+        callback=announce_daily,
         time=time(11, 0).replace(tzinfo=tehran),
         name="daily"
     )
@@ -80,8 +108,8 @@ def main():
     if DEBUG:
         logging.info("start polling")
         updater.job_queue.run_once(
-            callback=daily_announce,
-            when=10,
+            callback=announce_daily,
+            when=5,
             name="once (debug)"
         )
         updater.start_polling()
