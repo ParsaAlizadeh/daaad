@@ -16,6 +16,7 @@ _ALLOWED_PATTERNS["codeforces.com"] = [""]
 _ALLOWED_PATTERNS["atcoder.jp"] = ["beginner", "regular", "grand"]
 _ALLOWED_PATTERNS["hsin.hr/coci"] = [""]
 _ALLOWED_PATTERNS["codingcompetitions.withgoogle.com"] = [""]
+_ALLOWED_PATTERNS["stats.ioinformatics.org"] = [""]
 
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
