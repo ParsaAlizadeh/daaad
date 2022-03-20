@@ -33,7 +33,7 @@ def start_command(update: Update, context: CallbackContext):
 def manual_command(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
     if chat_id not in ADMINS:
-        logging.info("Illegal use of manual [chat_id=%s]", chat_id)
+        logging.info("illegal use of manual [chat_id=%s]", chat_id)
         return
     event = update.message.text.split('\n')[1:]
     json = { key: event[i] for i, key in enumerate(['event', 'href', 'start', 'end'])}
@@ -43,11 +43,11 @@ def manual_command(update: Update, context: CallbackContext):
     send_contest(now, contest, context)
 
     update.message.reply_text("انجام شد")
-    logging.info("Manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
+    logging.info("manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
 
 
 def log_error(update: Update, context: CallbackContext):
-    logging.error('Error Handler Called. [update="%s", error="%s"]', update, context.error)
+    logging.error('error handler called. [update="%s", error="%s"]', update, context.error)
 
 def announce_contests(context: CallbackContext):
     context.bot.send_message(CHANNEL, 'سلام ملت!', disable_notification=True)
@@ -76,7 +76,7 @@ def main():
     )
 
     if DEBUG:
-        logging.info("Start polling")
+        logging.info("start polling")
         updater.job_queue.run_once(
             callback=announce_contests,
             when=10,
@@ -84,7 +84,10 @@ def main():
         )
         updater.start_polling()
     else:
-        logging.info("Start webhook")
+        logging.info(
+            "start webhook [webhook_url=%s, port=%s, cert_filepath=%s]",
+            WEBHOOK_URL, PORT, CERT_FILEPATH
+        )
         updater.start_webhook(
             listen='0.0.0.0',
             port=PORT,

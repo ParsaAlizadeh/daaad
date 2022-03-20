@@ -31,7 +31,10 @@ def relative_date(d1: datetime, d2: datetime):
     for i, s in enumerate(texts):
         if d2.day == (d1 + i * a_day).day:
             return s
-    logging.warning("Asked for more than %s relative date", len(texts)-1)
+    logging.warning(
+        "asked for more than %s relative date, return '?' [from=%s, to=%s]",
+        len(texts)-1, d1, d2
+    )
     return '?'
 
 
@@ -107,8 +110,8 @@ def fetch_contests(now: datetime):
         response.raise_for_status()
         return map(Contest, response.json()["objects"])
     except requests.HTTPError:
-        logging.error(
-            'failed to fetch contests. [params="%s", status_code="%s", response="%s"',
+        logging.warning(
+            'failed to fetch contests, return empty list [params="%s", status_code="%s", response="%s"]',
             params, response.status_code, response.text
         )
         return []
