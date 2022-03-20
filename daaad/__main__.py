@@ -66,7 +66,8 @@ def main():
 
     updater.job_queue.run_daily(
         callback=announce_contests,
-        time=time(11, 0).replace(tzinfo=tehran)
+        time=time(11, 0).replace(tzinfo=tehran),
+        name="daily"
     )
 
     if DEBUG:
@@ -74,9 +75,18 @@ def main():
         updater.job_queue.run_once(
             callback=announce_contests,
             when=10,
-            name="announce contest"
+            name="once (debug)"
         )
         updater.start_polling()
+    else:
+        logging.info("Start webhook")
+        updater.start_webhook(
+            listen='0.0.0.0',
+            port=PORT,
+            url_path=TOKEN,
+            webhook_url=f'{WEBHOOK_URL}/{TOKEN}',
+            cert=CERT_FILEPATH
+        )
 
     updater.idle()
 
