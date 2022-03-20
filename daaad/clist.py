@@ -81,7 +81,7 @@ class Contest:
             delta_t += ' و {} دقیقه'.format(digits.en_to_fa(str(delta.minute)))
 
         lines = [
-            f'{relative}  /  {jalali}  /  {georgian}',
+            f'{relative}',
             f'از ساعت {start_t}',
             f'به مدت {delta_t}',
             self.event,
