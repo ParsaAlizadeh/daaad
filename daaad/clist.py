@@ -44,7 +44,7 @@ class Contest:
         self.href = json["href"]
 
     def __str__(self):
-        return f'<Contest "{self.event}" {self.start} {self.duration}>'
+        return f'<Contest "{self.event}" {self.start}>'
 
     def __repr__(self):
         return self.__str__()

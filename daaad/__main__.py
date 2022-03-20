@@ -31,7 +31,9 @@ def start_command(update: Update, context: CallbackContext):
     update.message.reply_text('\n'.join(msg))
 
 def manual_command(update: Update, context: CallbackContext):
-    if update.message.chat_id not in ADMINS:
+    chat_id = update.message.chat_id
+    if chat_id not in ADMINS:
+        logging.info("Illegal use of manual [chat_id=%s]", chat_id)
         return
     event = update.message.text.split('\n')[1:]
     json = { key: event[i] for i, key in enumerate(['event', 'href', 'start', 'end'])}
@@ -39,7 +41,10 @@ def manual_command(update: Update, context: CallbackContext):
     contest = Contest(json)
     now = datetime.utcnow().astimezone(utc)
     send_contest(now, contest, context)
+
     update.message.reply_text("انجام شد")
+    logging.info("Manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
+
 
 def log_error(update: Update, context: CallbackContext):
     logging.error('Error Handler Called. [update="%s", error="%s"]', update, context.error)
