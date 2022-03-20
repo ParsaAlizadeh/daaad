@@ -8,14 +8,15 @@ from telegram.ext import (
     CallbackContext
 )
 
-
 from .constants import *
-from .clist import fetch_desired_contests
+from .clist import fetch_desired_contests, utc
 
 def start_command(update: Update, context: CallbackContext):
     update.message.reply_text("سلام!")
-    r = fetch_desired_contests(datetime.utcnow())
-    logging.info(list(r))
+    now = datetime.utcnow().replace(tzinfo=utc)
+    events = fetch_desired_contests(now)
+    for e in events:
+        update.message.reply_text(e.pretty_show(now))
 
 def log_error(update: Update, context: CallbackContext):
     logging.error('Error Handler Called. [update="%s", error="%s"]', update, context.error)
