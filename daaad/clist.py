@@ -114,7 +114,7 @@ def fetch_contests(now: datetime):
         response.raise_for_status()
         return map(Contest, response.json()["objects"])
     except requests.HTTPError:
-        logging.warning(
+        logging.error(
             'failed to fetch contests, return empty list [params="%s", status_code="%s", response="%s"]',
             params, response.status_code, response.text
         )
