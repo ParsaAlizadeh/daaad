@@ -6,7 +6,8 @@ from telegram import Update
 from telegram.ext import (
     Updater,
     CommandHandler,
-    CallbackContext
+    CallbackContext,
+    JobQueue
 )
 
 from .constants import *
@@ -16,41 +17,8 @@ from .clist import (
     utc, tehran
 )
 
-def announce_one(contest: Contest, context: CallbackContext):
-    now = datetime.utcnow().astimezone(utc)
-    msg = context.bot.send_message(
-        chat_id=CHANNEL,
-        text=contest.pretty_show(now),
-        disable_web_page_preview=True
-    )
-    alarm_time = contest.start - timedelta(hours=1)
-    jobs = set(j.name for j in context.job_queue.jobs())
-    if contest.event not in jobs and alarm_time > now:
-        context.job_queue.run_once(
-            callback=announce_alarm,
-            when=alarm_time,
-            name=contest.event,
-            context={
-                "message_id": msg.message_id,
-                "contest": contest
-            }
-        )
-
-def announce_alarm(context: CallbackContext):
-    job = context.job
-    message_id = job.context["message_id"]
-    contest = job.context["contest"]
-    text = [
-        'یک ساعت مونده',
-        contest.event,
-        contest.href
-    ]
-    context.bot.send_message(
-        chat_id=CHANNEL,
-        text='\n'.join(text),
-        reply_to_message_id=message_id,
-        disable_web_page_preview=True
-    )
+def log_error(update: Update, context: CallbackContext):
+    logging.error('error handler called. [update="%s", error="%s"]', update, context.error)
 
 def start_command(update: Update, context: CallbackContext):
     msg = [
@@ -73,10 +41,6 @@ def manual_command(update: Update, context: CallbackContext):
     update.message.reply_text("انجام شد")
     logging.info("manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
 
-
-def log_error(update: Update, context: CallbackContext):
-    logging.error('error handler called. [update="%s", error="%s"]', update, context.error)
-
 def announce_daily(context: CallbackContext):
     upcoming = fetch_upcoming()
     if not upcoming:
@@ -85,6 +49,49 @@ def announce_daily(context: CallbackContext):
     context.bot.send_message(CHANNEL, 'سلام ملت!', disable_notification=True)
     for contest in upcoming:
         announce_one(contest, context)
+
+def announce_one(contest: Contest, context: CallbackContext):
+    now = datetime.utcnow().astimezone(utc)
+    msg = context.bot.send_message(
+        chat_id=CHANNEL,
+        text=contest.pretty_show(now),
+        disable_web_page_preview=True
+    )
+    set_alarm(now, contest, context.job_queue, msg.message_id)
+
+def announce_alarm(context: CallbackContext):
+    job = context.job
+    message_id = job.context["message_id"]
+    contest = job.context["contest"]
+    text = ['یک ساعت مونده', contest.event, contest.href]
+    context.bot.send_message(
+        chat_id=CHANNEL,
+        text='\n'.join(text),
+        reply_to_message_id=message_id,
+        disable_web_page_preview=True
+    )
+
+def set_alarm(now: datetime, contest: Contest, job_queue: JobQueue, message_id=None):
+    alarm_time = contest.start - timedelta(hours=1)
+    previous_jobs = job_queue.get_jobs_by_name(contest.event)
+    if not previous_jobs and alarm_time > now:
+        logging.info('set contest alarm [contest=%s, alarm_time=%s]', contest, alarm_time)
+        job_queue.run_once(
+            callback=announce_alarm,
+            when=alarm_time,
+            name=contest.event,
+            context={
+                "message_id": message_id,
+                "contest": contest
+            }
+        )
+
+def init_alarms(job_queue: JobQueue):
+    logging.info('initializing alarms')
+    now = datetime.utcnow().astimezone(utc)
+    upcoming = fetch_upcoming()
+    for contest in upcoming:
+        set_alarm(now, contest, job_queue)
 
 def main():
     logging.basicConfig(
@@ -104,6 +111,8 @@ def main():
         time=time(11, 0).replace(tzinfo=tehran),
         name="daily"
     )
+
+    init_alarms(updater.job_queue)
 
     if DEBUG:
         logging.info("start polling")
