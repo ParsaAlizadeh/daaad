@@ -51,7 +51,7 @@ def announce_daily(context: CallbackContext):
         announce_one(contest, context)
 
 def announce_one(contest: Contest, context: CallbackContext):
-    now = datetime.utcnow().astimezone(utc)
+    now = datetime.utcnow().replace(tzinfo=utc)
     msg = context.bot.send_message(
         chat_id=CHANNEL,
         text=contest.pretty_show(now),
@@ -88,7 +88,7 @@ def set_alarm(now: datetime, contest: Contest, job_queue: JobQueue, message_id=N
 
 def init_alarms(job_queue: JobQueue):
     logging.info('initializing alarms')
-    now = datetime.utcnow().astimezone(utc)
+    now = datetime.utcnow().replace(tzinfo=utc)
     upcoming = fetch_upcoming()
     for contest in upcoming:
         set_alarm(now, contest, job_queue)

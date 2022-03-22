@@ -127,5 +127,5 @@ def fetch_desired_contests(now: datetime):
     )
 
 def fetch_upcoming():
-    now = datetime.utcnow().astimezone(utc)
+    now = datetime.utcnow().replace(tzinfo=utc)
     return list(fetch_desired_contests(now))
