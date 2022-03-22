@@ -96,7 +96,7 @@ def init_alarms(job_queue: JobQueue):
 def main():
     logging.basicConfig(
         level=logging.INFO,
-        format="[%(levelname)s] %(message)s"
+        format="%(asctime)s [%(levelname)s] %(message)s"
     )
 
     updater = Updater(TOKEN, use_context=True)
