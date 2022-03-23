@@ -41,6 +41,20 @@ def relative_date(d1: datetime, d2: datetime):
     )
     return '?'
 
+def show_dt(dt: timedelta):
+    days = dt.days
+    total_minutes = dt.seconds // 60
+    minutes = total_minutes % 60
+    hours = total_minutes // 60
+    result = []
+    if days > 0:
+        result.append(f"{days} روز")
+    if hours > 0:
+        result.append(f"{hours} ساعت")
+    if minutes > 0:
+        result.append(f"{minutes} دقیقه")
+    return digits.en_to_fa(" و ".join(result))
+
 
 class Contest:
     def __init__(self, json):
@@ -82,10 +96,7 @@ class Contest:
         start_t = jalali_start.strftime("%H:%M", locale="fa")
         finish_t = jalali_end.strftime("%H:%M", locale="fa")
 
-        delta = datetime(1, 1, 1) + (loc_end - loc_start)
-        delta_t = '{} ساعت'.format(digits.en_to_fa(str(delta.hour)))
-        if delta.minute > 0:
-            delta_t += ' و {} دقیقه'.format(digits.en_to_fa(str(delta.minute)))
+        delta_t = show_dt(loc_end - loc_start)
 
         lines = [
             f'{relative}',
