@@ -46,7 +46,7 @@ def announce_daily(context: CallbackContext):
     if not upcoming:
         logging.info("no contest found today")
         return
-    context.bot.send_message(CHANNEL, 'سلام ملت!', disable_notification=True)
+    logging.info("start daily announce [contests=%s]", upcoming)
     for contest in upcoming:
         announce_one(contest, context)
 
