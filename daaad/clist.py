@@ -99,7 +99,7 @@ class Contest:
         delta_t = show_dt(loc_end - loc_start)
 
         lines = [
-            f'{relative}',
+            f'{relative}، {jalali}',
             f'از ساعت {start_t}',
             f'به مدت {delta_t}',
             self.event,
