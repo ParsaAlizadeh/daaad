@@ -41,21 +41,12 @@ def manual_command(update: Update, context: CallbackContext):
     json = { key: event[i] for i, key in enumerate(['event', 'href', 'start', 'end'])}
     json['resource'] = ''
     contest = Contest(json)
-    announce_one(contest, context)
+    announce_contest(contest, context)
 
     update.message.reply_text("انجام شد")
     logging.info("manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
 
-def announce_daily(context: CallbackContext):
-    upcoming = fetch_upcoming()
-    if not upcoming:
-        logging.info("no contest found today")
-        return
-    logging.info("start daily announce [contests=%s]", upcoming)
-    for contest in upcoming:
-        announce_one(contest, context)
-
-def announce_one(contest: Contest, context: CallbackContext):
+def announce_contest(contest: Contest, context: CallbackContext):
     now = datetime.utcnow().replace(tzinfo=utc)
     msg = context.bot.send_message(
         chat_id=CHANNEL,
@@ -91,7 +82,16 @@ def set_alarm(now: datetime, contest: Contest, job_queue: JobQueue, message_id=N
             }
         )
 
-def init_alarms(job_queue: JobQueue):
+def daily_procedure(context: CallbackContext):
+    upcoming = fetch_upcoming()
+    if not upcoming:
+        logging.info("no contest found today")
+        return
+    logging.info("start daily announce [contests=%s]", upcoming)
+    for contest in upcoming:
+        announce_contest(contest, context)
+
+def initial_procedure(job_queue: JobQueue):
     logging.info('initializing alarms')
     now = datetime.utcnow().replace(tzinfo=utc)
     upcoming = fetch_upcoming()
@@ -115,17 +115,17 @@ def main():
     dispatcher.add_error_handler(log_error)
 
     updater.job_queue.run_daily(
-        callback=announce_daily,
+        callback=daily_procedure,
         time=time(11, 0).replace(tzinfo=tehran),
         name="daily"
     )
 
-    init_alarms(updater.job_queue)
+    initial_procedure(updater.job_queue)
 
     if DEBUG:
         logging.info("start polling")
         updater.job_queue.run_once(
-            callback=announce_daily,
+            callback=daily_procedure,
             when=5,
             name="once (debug)"
         )
