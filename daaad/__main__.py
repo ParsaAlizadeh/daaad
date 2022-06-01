@@ -70,7 +70,9 @@ def announce_alarm(context: CallbackContext):
 def set_alarm(now: datetime, contest: Contest, job_queue: JobQueue, message_id=None):
     alarm_time = contest.start - timedelta(hours=1)
     previous_jobs = job_queue.get_jobs_by_name(contest.event)
-    if not previous_jobs and alarm_time > now:
+    for job in previous_jobs:
+        job.schedule_removal()
+    if alarm_time > now:
         logging.info('set contest alarm [contest=%s, alarm_time=%s]', contest, alarm_time)
         job_queue.run_once(
             callback=announce_alarm,
