@@ -116,17 +116,23 @@ def fetch_contests(now: datetime):
         "order_by": "start",
         "duration__lte": timedelta(hours=5).seconds
     }
-    response = requests.get(
-        url="https://clist.by/api/v2/contest/",
-        headers=headers,
-        params=params
-    )
     try:
+        response = requests.get(
+            url="https://clist.by/api/v2/contest/",
+            headers=headers,
+            params=params
+        )
         response.raise_for_status()
         return map(Contest, response.json()["objects"])
+    except requests.ConnectionError:
+        logging.exception(
+            'connection error in fetch contests, return empty list [params="%s"]',
+            params
+        )
+        return []
     except requests.HTTPError:
-        logging.error(
-            'failed to fetch contests, return empty list [params="%s", status_code="%s", response="%s"]',
+        logging.exception(
+            'http error in fetch contests, return empty list [params="%s", status_code="%s", response="%s"]',
             params, response.status_code, response.text
         )
         return []

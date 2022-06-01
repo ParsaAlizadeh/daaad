@@ -16,6 +16,11 @@ from .clist import (
     fetch_upcoming,
     utc, tehran
 )
+from .tglogging import TelegramLoggingHandler
+
+
+root_logger = logging.getLogger()
+
 
 def log_error(update: Update, context: CallbackContext):
     logging.error('error handler called. [update="%s", error="%s"]', update, context.error)
@@ -100,6 +105,9 @@ def main():
     )
 
     updater = Updater(TOKEN, use_context=True)
+
+    tglogging = TelegramLoggingHandler(updater.bot)
+    root_logger.addHandler(tglogging)
 
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start_command))
