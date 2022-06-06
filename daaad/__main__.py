@@ -93,12 +93,12 @@ def daily_procedure(context: CallbackContext):
     for contest in upcoming:
         announce_contest(contest, context)
 
-def initial_procedure(job_queue: JobQueue):
+def initial_procedure(context: CallbackContext):
     logging.info('initializing alarms')
     now = datetime.utcnow().replace(tzinfo=utc)
     upcoming = fetch_upcoming()
     for contest in upcoming:
-        set_alarm(now, contest, job_queue)
+        set_alarm(now, contest, context.job_queue)
 
 def main():
     logging.basicConfig(
@@ -119,10 +119,14 @@ def main():
     updater.job_queue.run_daily(
         callback=daily_procedure,
         time=time(11, 0).replace(tzinfo=tehran),
-        name="daily"
+        name="daily procedure"
     )
 
-    initial_procedure(updater.job_queue)
+    updater.job_queue.run_once(
+        callback=initial_procedure,
+        when=5,
+        name="initial procedure"
+    )
 
     if DEBUG:
         logging.info("start polling")
