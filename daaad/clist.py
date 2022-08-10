@@ -1,6 +1,7 @@
 import requests
 import logging
 import pytz
+import itertools
 from collections import defaultdict
 from datetime import datetime, timedelta
 from persiantools.jdatetime import JalaliDateTime
@@ -15,7 +16,6 @@ _ALLOWED_PATTERNS = defaultdict(list)
 _ALLOWED_PATTERNS["codeforces.com"] = [""]
 _ALLOWED_PATTERNS["atcoder.jp"] = ["beginner", "regular", "grand"]
 _ALLOWED_PATTERNS["hsin.hr/coci"] = [""]
-_ALLOWED_PATTERNS["stats.ioinformatics.org"] = [""]
 _ALLOWED_PATTERNS["usaco.org"] = [""]
 
 _DISALLOWED_PATTERNS = defaultdict(list)
@@ -107,15 +107,9 @@ class Contest:
         ]
         return '\n'.join(lines)
 
-def fetch_contests(now: datetime):
+def fetch_contests(**params):
     headers = { "Authorization": f"ApiKey {APIKEY}" }
-    params = {
-        "limit": 200,
-        "start__gte": now.isoformat(timespec='seconds'),
-        "start__lte": (now + timedelta(days=_DAYS)).isoformat(timespec='seconds'),
-        "order_by": "start",
-        "duration__lte": timedelta(hours=5).seconds
-    }
+    result = []
     try:
         response = requests.get(
             url="https://clist.by/api/v2/contest/",
@@ -123,26 +117,40 @@ def fetch_contests(now: datetime):
             params=params
         )
         response.raise_for_status()
-        return map(Contest, response.json()["objects"])
+        result = map(Contest, response.json()["objects"])
     except requests.ConnectionError:
         logging.exception(
             'connection error in fetch contests, return empty list [params="%s"]',
             params
         )
-        return []
     except requests.HTTPError:
         logging.exception(
             'http error in fetch contests, return empty list [params="%s", status_code="%s", response="%s"]',
             params, response.status_code, response.text
         )
-        return []
+    return result
 
-def fetch_desired_contests(now: datetime):
+def fetch_general():
+    now = datetime.utcnow().replace(tzinfo=utc)
     return filter(
         Contest.is_desired,
-        fetch_contests(now)
+        fetch_contests(
+            start__gte=now.isoformat(timespec='seconds'),
+            start__lte=(now + timedelta(days=_DAYS)).isoformat(timespec='seconds'),
+            duration__lte=timedelta(hours=5).seconds
+        )
+    )
+
+def fetch_ioi():
+    now = datetime.utcnow().replace(tzinfo=utc)
+    return fetch_contests(
+        start__gte=now.isoformat(timespec='seconds'),
+        start__lte=(now + timedelta(days=1)).isoformat(timespec='seconds'),
+        resource="stats.ioinformatics.org"
     )
 
 def fetch_upcoming():
-    now = datetime.utcnow().replace(tzinfo=utc)
-    return list(fetch_desired_contests(now))
+    return sorted(
+        itertools.chain(fetch_general(), fetch_ioi()),
+        key=lambda c: c.start
+    )

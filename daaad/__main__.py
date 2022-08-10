@@ -68,6 +68,8 @@ def announce_alarm(context: CallbackContext):
     )
 
 def set_alarm(now: datetime, contest: Contest, job_queue: JobQueue, message_id=None):
+    if contest.resource == 'stats.ioinformatics.org':
+        return
     alarm_time = contest.start - timedelta(hours=1)
     previous_jobs = job_queue.get_jobs_by_name(contest.event)
     for job in previous_jobs:
