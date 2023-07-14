@@ -20,7 +20,7 @@ _ALLOWED_PATTERNS["usaco.org"] = [""]
 
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
-_DISALLOWED_PATTERNS["usaco.org"] = ["ioi"]
+_DISALLOWED_PATTERNS["usaco.org"] = ["ioi", "egoi"]
 
 _DAYS = 2
 
