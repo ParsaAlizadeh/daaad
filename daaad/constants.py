@@ -34,4 +34,3 @@ PORT = os.getenv("PORT", "5000")
 PORT = int(PORT)
 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-CERT_FILEPATH = os.getenv("CERT_FILEPATH")

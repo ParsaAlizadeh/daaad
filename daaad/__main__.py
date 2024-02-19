@@ -148,7 +148,6 @@ def main():
             port=PORT,
             url_path=TOKEN,
             webhook_url=f'{WEBHOOK_URL}/{TOKEN}',
-            cert=CERT_FILEPATH
         )
 
     updater.idle()
