@@ -140,8 +140,8 @@ def main():
         updater.start_polling()
     else:
         logging.info(
-            "start webhook [webhook_url=%s, port=%s, cert_filepath=%s]",
-            WEBHOOK_URL, PORT, CERT_FILEPATH
+            "start webhook [webhook_url=%s, port=%s]",
+            WEBHOOK_URL, PORT
         )
         updater.start_webhook(
             listen='0.0.0.0',
