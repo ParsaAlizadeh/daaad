@@ -1,7 +1,7 @@
 import functools
 import logging
 
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 from telegram import Update
 from telegram.ext import (
     Updater,
@@ -47,7 +47,7 @@ def manual_command(update: Update, context: CallbackContext):
     logging.info("manual announce done [chat_id=%s, contest=%s]", chat_id, contest)
 
 def announce_contest(contest: Contest, context: CallbackContext):
-    now = datetime.utcnow().replace(tzinfo=utc)
+    now = datetime.now(timezone.utc)
     msg = context.bot.send_message(
         chat_id=CHANNEL,
         text=contest.pretty_show(now),
@@ -97,7 +97,7 @@ def daily_procedure(context: CallbackContext):
 
 def initial_procedure(context: CallbackContext):
     logging.info('initializing alarms')
-    now = datetime.utcnow().replace(tzinfo=utc)
+    now = datetime.now(timezone.utc)
     upcoming = fetch_upcoming()
     for contest in upcoming:
         set_alarm(now, contest, context.job_queue)

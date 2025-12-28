@@ -3,7 +3,7 @@ import logging
 import pytz
 import itertools
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from persiantools.jdatetime import JalaliDateTime
 from persiantools import digits
 from .constants import *
@@ -17,6 +17,7 @@ _ALLOWED_PATTERNS["codeforces.com"] = [""]
 _ALLOWED_PATTERNS["atcoder.jp"] = ["beginner", "regular", "grand"]
 _ALLOWED_PATTERNS["hsin.hr/coci"] = [""]
 _ALLOWED_PATTERNS["usaco.org"] = [""]
+_ALLOWED_PATTERNS["repovive.com"] = [""]
 
 _DISALLOWED_PATTERNS = defaultdict(list)
 _DISALLOWED_PATTERNS["codeforces.com"] = ["unrated", "kotlin"]
@@ -131,7 +132,7 @@ def fetch_contests(**params):
     return result
 
 def fetch_general():
-    now = datetime.utcnow().replace(tzinfo=utc)
+    now = datetime.now(timezone.utc)
     return filter(
         Contest.is_desired,
         fetch_contests(
@@ -142,7 +143,7 @@ def fetch_general():
     )
 
 def fetch_ioi():
-    now = datetime.utcnow().replace(tzinfo=utc)
+    now = datetime.now(timezone.utc)
     return fetch_contests(
         start__gte=now.isoformat(timespec='seconds'),
         start__lte=(now + timedelta(days=1)).isoformat(timespec='seconds'),
